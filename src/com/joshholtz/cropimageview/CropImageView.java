@@ -5,10 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Paint.Style;
-import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -16,7 +13,6 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.RectShape;
 import android.util.AttributeSet;
-import android.util.FloatMath;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,7 +24,6 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	
 	private final static String TAG = "CropImageView";
 	
-	private final static int HEIGHT_OF_DRAGGER_INSIDE = 30;
 	private final static int HEIGHT_OF_DRAGGER = 45;
 	private final static int INITIAL_MARGIN_OF_DRAGGER = 60;
 	
