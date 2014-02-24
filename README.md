@@ -2,6 +2,8 @@
 
 Super easy component for Android to crop an image
 
+![](https://raw.github.com/joshdholtz/CropImageView/master/screenshots/screenshot_1.png)
+
 ### Example
 
 ````xml
