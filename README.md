@@ -4,6 +4,10 @@ Super easy component for Android to crop an image
 
 ![](https://raw.github.com/joshdholtz/CropImageView/master/screenshots/screenshot_1.png)
 
+### Installation
+
+- FOR NOW, just use as an Android library project
+
 ### Example
 
 ````xml
@@ -31,6 +35,13 @@ public class MainActivity extends Activity {
 		
 		cropImageView = (CropImageView) this.findViewById(R.id.crop_image_view);
 		cropImageView.setImageResource(getResources(), R.drawable.josh_hood);
+		
+		// OPTIONAL - set corner color size and crop area color
+//		cropImageView.setCornerDrawable(Color.rgb(255, 200, 0), 100, 100);
+//		cropImageView.setCropAreaDrawable(Color.LTGRAY, 150, Color.CYAN, 200, 8);
+		
+		// OPTIONAL - keep crop square
+//		cropImageView.setKeepSquare(true);
 	}
 	
 	@Override
@@ -43,15 +54,19 @@ public class MainActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.action_crop) {
-			DisplayActivity.imageToShow = cropImageView.crop(this);
-			
-			Intent intent = new Intent(this, DisplayActivity.class);
-			this.startActivity(intent);
+			try {
+				DisplayActivity.imageToShow = cropImageView.crop(this);
+				
+				Intent intent = new Intent(this, DisplayActivity.class);
+				this.startActivity(intent);
+			} catch (IllegalArgumentException e) {
+				// Crop section is out of bounds of image
+			}
 		}
 		
 		return(super.onOptionsItemSelected(item));
 	}
-
+	
 }
 
 ````
