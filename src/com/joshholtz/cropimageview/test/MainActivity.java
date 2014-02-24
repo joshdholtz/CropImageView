@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
 //		cropImageView.setCropAreaDrawable(Color.LTGRAY, 150, Color.CYAN, 200, 8);
 		
 		// OPTIONAL - keep crop square
-		cropImageView.setKeepSquare(true);
+//		cropImageView.setKeepSquare(true);
 	}
 	
 	@Override
@@ -40,10 +40,14 @@ public class MainActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.action_crop) {
-			DisplayActivity.imageToShow = cropImageView.crop(this);
-			
-			Intent intent = new Intent(this, DisplayActivity.class);
-			this.startActivity(intent);
+			try {
+				DisplayActivity.imageToShow = cropImageView.crop(this);
+				
+				Intent intent = new Intent(this, DisplayActivity.class);
+				this.startActivity(intent);
+			} catch (IllegalArgumentException e) {
+				// Crop section is out of bounds of image
+			}
 		}
 		
 		return(super.onOptionsItemSelected(item));

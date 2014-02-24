@@ -104,7 +104,7 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		this.setImageBitmap(BitmapFactory.decodeResource(getResources(), resId));
 	}
 	
-	public Bitmap crop(Context context) {
+	public Bitmap crop(Context context) throws IllegalArgumentException {
 		// Weird padding cause image size
 		int weirdSidePadding = this.getWeirdSideMargin();
 		int weirdVerticalPadding = this.getWeirdVerticalMargin();
