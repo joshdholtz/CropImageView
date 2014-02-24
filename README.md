@@ -6,7 +6,8 @@ Super easy component for Android to crop an image
 
 ### Installation
 
-- FOR NOW, just use as an Android library project
+- Download JAR from releases [crop-image-view-0.0.1.jar](https://github.com/joshdholtz/CropImageView/releases/tag/crop-image-view-0.0.1)
+- Download and use as an Android library project
 
 ### Example
 
