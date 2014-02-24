@@ -22,9 +22,12 @@ public class MainActivity extends Activity {
 		cropImageView = (CropImageView) this.findViewById(R.id.crop_image_view);
 		cropImageView.setImageResource(getResources(), R.drawable.josh_hood);
 		
-		// OPTIONAL - set corner color and size
+		// OPTIONAL - set corner color size and crop area color
 //		cropImageView.setCornerDrawable(Color.rgb(255, 200, 0), 100, 100);
 //		cropImageView.setCropAreaDrawable(Color.LTGRAY, 150, Color.CYAN, 200, 8);
+		
+		// OPTIONAL - keep crop square
+		cropImageView.setKeepSquare(true);
 	}
 	
 	@Override

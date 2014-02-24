@@ -40,6 +40,8 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	private  Drawable mDraggerDrawable;
 	private  Drawable mCropDrawable;
 	
+	private boolean mKeepSquare;
+	
 	private Bitmap mBitmap;
 	
 	public CropImageView(Context context) {
@@ -73,6 +75,16 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		
 		if (mBottomRightDragger != null) {
 			mBottomRightDragger.setImageDrawable(mDraggerDrawable);
+		}
+	}
+	
+	public void setKeepSquare(boolean keepSquare) {
+		mKeepSquare = keepSquare;
+		
+		if (mTopLeftDragger != null && mBottomRightDragger != null) {
+			Log.d(TAG, "Draggers exist");
+		} else {
+			Log.d(TAG, "Draggers don't exist");
 		}
 	}
 	
@@ -166,6 +178,12 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 			int rightMargin = 0;
 			int bottomMargin = 0;
 			
+			if (mKeepSquare) {
+				int smallestMargin = Math.min(leftMargin, topMargin);
+				leftMargin = smallestMargin;
+				topMargin = smallestMargin;
+			}
+			
 			FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 			params.setMargins(leftMargin, topMargin, rightMargin, bottomMargin);
 			this.addView(mBottomRightDragger, params);
@@ -219,8 +237,17 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	        {
 	            x = event.getRawX();
 	            y = event.getRawY();
-	            parms.leftMargin = (int) (x-dx);
-	            parms.topMargin = (int) (y - dy);
+	            
+	            int leftMargin = (int) (x-dx);
+	            int topMargin = (int) (y - dy);
+	    		if (mKeepSquare) {
+	    			int smallestMargin = Math.min(leftMargin, topMargin);
+	    			leftMargin = smallestMargin;
+	    			topMargin = smallestMargin;
+	    		}
+	            
+	            parms.leftMargin = leftMargin;
+	            parms.topMargin = topMargin;
 	            v.setLayoutParams(parms);
 	            
 	            moveCrop();
