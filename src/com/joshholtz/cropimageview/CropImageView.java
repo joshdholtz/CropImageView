@@ -106,23 +106,8 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	
 	public Bitmap crop(Context context) {
 		// Weird padding cause image size
-		int weirdSidePadding = 0;
-		int weirdVerticalPadding = 0;
-		
-		// Image width / height ration
-		double bitmapRatio = ((double)mBitmap.getWidth() / (double)mBitmap.getHeight());
-		
-		// Image width / height ration
-		double thisRatio = ((double)this.getWidth() / (double)this.getHeight());
-
-		// Magic math
-		if (bitmapRatio < thisRatio) {
-			int bitmapWidth = (int) (bitmapRatio * this.getHeight());
-			weirdSidePadding = (int) ((this.getWidth() - bitmapWidth) / 2.0); 
-		} else {
-			int bitmapHeight = (int) (bitmapRatio * this.getWidth());
-			weirdVerticalPadding = (int) ((this.getHeight() - bitmapHeight) / 2.0);
-		}
+		int weirdSidePadding = this.getWeirdSideMargin();
+		int weirdVerticalPadding = this.getWeirdVerticalMargin();
 		
 		FrameLayout.LayoutParams params = (LayoutParams) mDaBox.getLayoutParams();
 		
@@ -351,6 +336,48 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		LayerDrawable composite = new LayerDrawable(layers);
 		
 		return composite;
+	}
+	
+	private int getWeirdSideMargin() {
+		// Weird padding cause image size
+		int weirdSidePadding = 0;
+		
+		// Image width / height ration
+		double bitmapRatio = ((double)mBitmap.getWidth() / (double)mBitmap.getHeight());
+		
+		// Image width / height ration
+		double thisRatio = ((double)this.getWidth() / (double)this.getHeight());
+
+		// Magic math
+		if (bitmapRatio < thisRatio) {
+			int bitmapWidth = (int) (bitmapRatio * this.getHeight());
+			weirdSidePadding = (int) ((this.getWidth() - bitmapWidth) / 2.0); 
+		} else {
+			
+		}
+		
+		return weirdSidePadding;
+	}
+	
+	private int getWeirdVerticalMargin() {
+		// Weird padding cause image size
+		int weirdVerticalPadding = 0;
+		
+		// Image width / height ration
+		double bitmapRatio = ((double)mBitmap.getWidth() / (double)mBitmap.getHeight());
+		
+		// Image width / height ration
+		double thisRatio = ((double)this.getWidth() / (double)this.getHeight());
+
+		// Magic math
+		if (bitmapRatio < thisRatio) {
+ 
+		} else {
+			int bitmapHeight = (int) (bitmapRatio * this.getWidth());
+			weirdVerticalPadding = (int) ((this.getHeight() - bitmapHeight) / 2.0);
+		}
+		
+		return weirdVerticalPadding;
 	}
 	
 }
