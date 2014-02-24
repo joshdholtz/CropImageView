@@ -1,6 +1,9 @@
 package com.joshholtz.cropimageview;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -33,6 +36,8 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	private ImageView mBottomRightDragger;
 	private ImageView mDaBox;
 	
+	private Bitmap mBitmap;
+	
 	public CropImageView(Context context) {
 		super(context);
 		init();
@@ -48,10 +53,52 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		init();
 	}
 	
-	public void setImageResource(int resId) {
+	public void setImageBitmap(Bitmap bm) { 
 		if (mImageView != null) {
-			mImageView.setImageResource(resId);
+			mBitmap = bm;
+			mImageView.setImageBitmap(bm);
 		}
+	}
+	
+	public void setImageResource(Resources resources, int resId) {
+		this.setImageBitmap(BitmapFactory.decodeResource(getResources(), resId));
+	}
+	
+	public Bitmap crop(Context context) {
+		// Weird padding cause image size
+		int weirdSidePadding = 0;
+		int weirdVerticalPadding = 0;
+		
+		// Image width / height ration
+		double bitmapRatio = ((double)mBitmap.getWidth() / (double)mBitmap.getHeight());
+		
+		// Image width / height ration
+		double thisRatio = ((double)this.getWidth() / (double)this.getHeight());
+		
+		Log.d(TAG, "This width and height - " + this.getWidth() + ", " + this.getHeight());
+		Log.d(TAG, "Bitmap ratio - " + bitmapRatio);
+		Log.d(TAG, "This ratio - " + thisRatio);
+		
+		if (bitmapRatio < thisRatio) {
+			int bitmapWidth = (int) (bitmapRatio * this.getHeight());
+			Log.d(TAG, "Bitmap is taller - width is = " + bitmapWidth);
+			weirdSidePadding = (int) ((this.getWidth() - bitmapWidth) / 2.0); 
+		} else {
+			
+		}
+		
+		FrameLayout.LayoutParams params = (LayoutParams) mDaBox.getLayoutParams();
+		
+		// Getting crop dimensions
+		float d = context.getResources().getDisplayMetrics().density;
+		int x = (int)((params.leftMargin - weirdSidePadding) * d);
+		int y = (int)((params.topMargin + weirdVerticalPadding) * d);
+		int width = (int)((this.getWidth() - params.leftMargin - params.rightMargin + (weirdSidePadding * 0)) * d);
+		int height = (int)((this.getHeight() - params.topMargin - params.bottomMargin - weirdVerticalPadding) * d);
+		
+		Bitmap crooopppppppppppppppeed = Bitmap.createBitmap(mBitmap, x, y, width, height);
+		
+		return crooopppppppppppppppeed;
 	}
 	
 	private void init() {
@@ -195,13 +242,12 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	
 	private Drawable getCropDrawable() {
 		ShapeDrawable greenShape = new ShapeDrawable(new RectShape());
-//		greenShape.setIntrinsicHeight( this.getHeight() );
-//		greenShape.setIntrinsicWidth(  this.getWidth() );
 	    greenShape.getPaint().setStrokeWidth(3);
 	    greenShape.getPaint().setColor(Color.WHITE);
 	    greenShape.setAlpha(150);
 	    greenShape.getPaint().setStyle(Paint.Style.FILL_AND_STROKE);
 	    
+	    // Its not really green
 	    return greenShape;
 	}
 	

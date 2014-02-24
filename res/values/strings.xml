@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">CropImageView</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_crop">Crop</string>
     <string name="hello_world">Hello world!</string>
 
 </resources>
