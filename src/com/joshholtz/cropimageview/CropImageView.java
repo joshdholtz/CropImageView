@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -36,6 +37,9 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	private ImageView mBottomRightDragger;
 	private ImageView mDaBox;
 	
+	private  Drawable mDraggerDrawable;
+	private  Drawable mCropDrawable;
+	
 	private Bitmap mBitmap;
 	
 	public CropImageView(Context context) {
@@ -60,6 +64,30 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		}
 	}
 	
+	public void setCornerDrawable(int color, int width, int height) {
+		mDraggerDrawable = this.getCircleDrawable(color, width, height);
+		
+		if (mTopLeftDragger != null) {
+			mTopLeftDragger.setImageDrawable(mDraggerDrawable);
+		}
+		
+		if (mBottomRightDragger != null) {
+			mBottomRightDragger.setImageDrawable(mDraggerDrawable);
+		}
+	}
+	
+	public void setCropAreaDrawable(int fillColor, int fillAlpha, int strokeColor, int strokeAlpha, int strokeWidth) {
+		mCropDrawable = this.getCropDrawable(fillColor, fillAlpha, strokeColor, strokeAlpha, strokeWidth);
+		
+		if (mDaBox != null) {
+			if (android.os.Build.VERSION.SDK_INT < 16) {
+				mDaBox.setBackgroundDrawable(mCropDrawable);
+			} else {
+				mDaBox.setBackground(mCropDrawable);
+			}
+		}
+	}
+	
 	public void setImageResource(Resources resources, int resId) {
 		this.setImageBitmap(BitmapFactory.decodeResource(getResources(), resId));
 	}
@@ -74,17 +102,14 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		
 		// Image width / height ration
 		double thisRatio = ((double)this.getWidth() / (double)this.getHeight());
-		
-		Log.d(TAG, "This width and height - " + this.getWidth() + ", " + this.getHeight());
-		Log.d(TAG, "Bitmap ratio - " + bitmapRatio);
-		Log.d(TAG, "This ratio - " + thisRatio);
-		
+
+		// Magic math
 		if (bitmapRatio < thisRatio) {
 			int bitmapWidth = (int) (bitmapRatio * this.getHeight());
-			Log.d(TAG, "Bitmap is taller - width is = " + bitmapWidth);
 			weirdSidePadding = (int) ((this.getWidth() - bitmapWidth) / 2.0); 
 		} else {
-			
+			int bitmapHeight = (int) (bitmapRatio * this.getWidth());
+			weirdVerticalPadding = (int) ((this.getHeight() - bitmapHeight) / 2.0);
 		}
 		
 		FrameLayout.LayoutParams params = (LayoutParams) mDaBox.getLayoutParams();
@@ -92,9 +117,9 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		// Getting crop dimensions
 		float d = context.getResources().getDisplayMetrics().density;
 		int x = (int)((params.leftMargin - weirdSidePadding) * d);
-		int y = (int)((params.topMargin + weirdVerticalPadding) * d);
-		int width = (int)((this.getWidth() - params.leftMargin - params.rightMargin + (weirdSidePadding * 0)) * d);
-		int height = (int)((this.getHeight() - params.topMargin - params.bottomMargin - weirdVerticalPadding) * d);
+		int y = (int)((params.topMargin - weirdVerticalPadding) * d);
+		int width = (int)((this.getWidth() - params.leftMargin - params.rightMargin) * d);
+		int height = (int)((this.getHeight() - params.topMargin - params.bottomMargin) * d);
 		
 		Bitmap crooopppppppppppppppeed = Bitmap.createBitmap(mBitmap, x, y, width, height);
 		
@@ -102,6 +127,9 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	}
 	
 	private void init() {
+		mDraggerDrawable = this.getCircleDrawable(Color.rgb(255, 200, 0), HEIGHT_OF_DRAGGER, HEIGHT_OF_DRAGGER);
+		mCropDrawable = this.getCropDrawable(Color.LTGRAY, 150, Color.LTGRAY, 255, 8);
+		
 		if (mImageView == null) {
 			mImageView = new ImageView(this.getContext());
 			
@@ -117,7 +145,7 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		
 		if (mTopLeftDragger == null) {
 			mTopLeftDragger = new ImageView(this.getContext());
-			mTopLeftDragger.setImageDrawable(this.getCircleDrawable());
+			mTopLeftDragger.setImageDrawable(mDraggerDrawable);
 			mTopLeftDragger.setOnTouchListener(this);
 			
 			FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -127,7 +155,7 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		
 		if (mBottomRightDragger == null) {
 			mBottomRightDragger = new ImageView(this.getContext());
-			mBottomRightDragger.setImageDrawable(this.getCircleDrawable());
+			mBottomRightDragger.setImageDrawable(mDraggerDrawable);
 			mBottomRightDragger.setOnTouchListener(this);
 			
 			int width = this.getWidth();
@@ -147,9 +175,9 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 			mDaBox = new ImageView(this.getContext());
 //			mDaBox.setImageDrawable(this.getCropDrawable());
 			if (android.os.Build.VERSION.SDK_INT < 16) {
-				mDaBox.setBackgroundDrawable(this.getCropDrawable());
+				mDaBox.setBackgroundDrawable(mCropDrawable);
 			} else {
-				mDaBox.setBackground(this.getCropDrawable());
+				mDaBox.setBackground(mCropDrawable);
 			}
 			mDaBox.setScaleType(ScaleType.MATRIX);
 			mDaBox.setAdjustViewBounds(true);
@@ -214,12 +242,13 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 		int width = this.getWidth();
 		int height = this.getHeight();
 		
-		int leftMargin = (int) (paramsTopLeft.leftMargin + (HEIGHT_OF_DRAGGER/2.0f));
-		int topMargin = (int) (paramsTopLeft.topMargin + (HEIGHT_OF_DRAGGER/2.0f));
-		int rightMargin = (int) (width - paramsBottomRight.leftMargin - (HEIGHT_OF_DRAGGER/2.0f));
-		int bottomMargin = (int) (height - paramsBottomRight.topMargin - (HEIGHT_OF_DRAGGER/2.0f));
+		int widthOfCorner = mDraggerDrawable.getIntrinsicWidth();
+		int heightOfCorner = mDraggerDrawable.getIntrinsicHeight();
 		
-		Log.d(TAG, "Trying to move crop - " + leftMargin + ", " + topMargin + ", " + rightMargin + ", " + bottomMargin);
+		int leftMargin = (int) (paramsTopLeft.leftMargin + (widthOfCorner/2.0f));
+		int topMargin = (int) (paramsTopLeft.topMargin + (heightOfCorner/2.0f));
+		int rightMargin = (int) (width - paramsBottomRight.leftMargin - (widthOfCorner/2.0f));
+		int bottomMargin = (int) (height - paramsBottomRight.topMargin - (heightOfCorner/2.0f));
 		
 		FrameLayout.LayoutParams params = (LayoutParams) mDaBox.getLayoutParams();;
 		params.leftMargin = leftMargin;
@@ -230,25 +259,34 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 
 	}
 	
-	private Drawable getCircleDrawable() {
+	private Drawable getCircleDrawable(int color, int width, int height) {
         ShapeDrawable biggerCircle= new ShapeDrawable( new OvalShape());
-        biggerCircle.setIntrinsicHeight( HEIGHT_OF_DRAGGER );
-        biggerCircle.setIntrinsicWidth( HEIGHT_OF_DRAGGER);
-        biggerCircle.setBounds(new Rect(0, 0, HEIGHT_OF_DRAGGER, HEIGHT_OF_DRAGGER));
-        biggerCircle.getPaint().setColor(Color.BLUE);
+        biggerCircle.setIntrinsicWidth( width);
+        biggerCircle.setIntrinsicHeight( height );
+        biggerCircle.setBounds(new Rect(0, 0, width, height));
+        biggerCircle.getPaint().setColor(color);
         
         return biggerCircle;
 	}
 	
-	private Drawable getCropDrawable() {
-		ShapeDrawable greenShape = new ShapeDrawable(new RectShape());
-	    greenShape.getPaint().setStrokeWidth(3);
-	    greenShape.getPaint().setColor(Color.WHITE);
-	    greenShape.setAlpha(150);
-	    greenShape.getPaint().setStyle(Paint.Style.FILL_AND_STROKE);
-	    
-	    // Its not really green
-	    return greenShape;
+	private Drawable getCropDrawable(int fillColor, int fillAlpha, int strokeColor, int strokeAlpha, int strokeWidth) {
+		ShapeDrawable sd1 = new ShapeDrawable(new RectShape());
+		sd1.getPaint().setColor(strokeColor);
+		sd1.getPaint().setStyle(Style.STROKE);
+		sd1.getPaint().setStrokeWidth(strokeWidth);
+		sd1.setAlpha(255);
+		 
+		ShapeDrawable sd2 = new ShapeDrawable(new RectShape());
+		sd2.getPaint().setColor(fillColor);
+		sd2.getPaint().setStyle(Style.FILL);
+		sd2.setAlpha(fillAlpha);
+		 
+		Drawable[] layers = new Drawable[2];
+		layers[0] = sd1;
+		layers[1] = sd2;
+		LayerDrawable composite = new LayerDrawable(layers);
+		
+		return composite;
 	}
 	
 }

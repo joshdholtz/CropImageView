@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 
 public class MainActivity extends Activity {
 
@@ -20,6 +21,10 @@ public class MainActivity extends Activity {
 		
 		cropImageView = (CropImageView) this.findViewById(R.id.crop_image_view);
 		cropImageView.setImageResource(getResources(), R.drawable.josh_hood);
+		
+		// OPTIONAL - set corner color and size
+//		cropImageView.setCornerDrawable(Color.rgb(255, 200, 0), 100, 100);
+//		cropImageView.setCropAreaDrawable(Color.LTGRAY, 150, Color.CYAN, 200, 8);
 	}
 	
 	@Override
@@ -40,5 +45,5 @@ public class MainActivity extends Activity {
 		
 		return(super.onOptionsItemSelected(item));
 	}
-
+	
 }
