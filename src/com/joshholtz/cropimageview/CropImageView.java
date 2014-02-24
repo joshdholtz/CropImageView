@@ -199,6 +199,7 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 			}
 			mDaBox.setScaleType(ScaleType.MATRIX);
 			mDaBox.setAdjustViewBounds(true);
+			mDaBox.setOnTouchListener(this);
 //			mDaBox.setBackgroundColor(Color.WHITE);
 			
 //			FrameLayout.LayoutParams paramsTopLeft = (LayoutParams) mTopLeftDragger.getLayoutParams();
@@ -227,10 +228,13 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	    {
 	        case MotionEvent.ACTION_DOWN :
 	        {
-	            parms = (LayoutParams) v.getLayoutParams();
-//	            par = (LinearLayout.LayoutParams) getWindow().findViewById(Window.ID_ANDROID_CONTENT).getLayoutParams();
-	            dx = event.getRawX() - parms.leftMargin;
-	            dy = event.getRawY() - parms.topMargin;
+//	        	if (v == mTopLeftDragger || v == mBottomRightDragger) {
+		            parms = (LayoutParams) v.getLayoutParams();
+		            dx = event.getRawX() - parms.leftMargin;
+		            dy = event.getRawY() - parms.topMargin;
+//	        	} else if (v == mDaBox) {
+//	        		
+//	        	}
 	        }
 	        break;
 	        case MotionEvent.ACTION_MOVE :
@@ -238,19 +242,52 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	            x = event.getRawX();
 	            y = event.getRawY();
 	            
-	            int leftMargin = (int) (x-dx);
-	            int topMargin = (int) (y - dy);
-	    		if (mKeepSquare) {
-	    			int smallestMargin = Math.min(leftMargin, topMargin);
-	    			leftMargin = smallestMargin;
-	    			topMargin = smallestMargin;
-	    		}
-	            
-	            parms.leftMargin = leftMargin;
-	            parms.topMargin = topMargin;
-	            v.setLayoutParams(parms);
-	            
-	            moveCrop();
+	            if (v == mTopLeftDragger || v == mBottomRightDragger) {
+		            int leftMargin = (int) (x-dx);
+		            int topMargin = (int) (y - dy);
+		            
+		    		if (mKeepSquare) {
+		    			int dLeft = leftMargin - parms.leftMargin;
+			            int dTop = topMargin - parms.topMargin;
+		    			
+		    			int smallestMargin = Math.min(dLeft, dTop);
+		    			leftMargin = smallestMargin;
+		    			topMargin = smallestMargin;
+		    			
+		    			parms.leftMargin += smallestMargin;
+			            parms.topMargin += smallestMargin;
+		    		} else {
+		    			parms.leftMargin = leftMargin;
+			            parms.topMargin = topMargin;
+		    		}
+		            
+		            
+		            v.setLayoutParams(parms);
+		            
+		            moveCrop();
+	            } else if (v == mDaBox) {
+	            	int leftMargin = (int) (x-dx);
+		            int topMargin = (int) (y - dy);
+		            
+		            int dLeft = leftMargin - parms.leftMargin;
+		            int dTop = topMargin - parms.topMargin;
+		            
+		            parms.leftMargin = leftMargin;
+		            parms.topMargin = topMargin;
+		            parms.rightMargin -= dLeft;
+		            parms.bottomMargin -= dTop;
+		            v.setLayoutParams(parms);
+		            
+		            FrameLayout.LayoutParams topLeftParams = (LayoutParams) mTopLeftDragger.getLayoutParams();
+		            topLeftParams.leftMargin += dLeft;
+		            topLeftParams.topMargin += dTop;
+		            mTopLeftDragger.setLayoutParams(topLeftParams);
+		            
+		            FrameLayout.LayoutParams bottomRightParams = (LayoutParams) mBottomRightDragger.getLayoutParams();
+		            bottomRightParams.leftMargin += dLeft;
+		            bottomRightParams.topMargin += dTop;
+		            mBottomRightDragger.setLayoutParams(bottomRightParams);
+	        	}
 	        }
 	        break;
 	        case MotionEvent.ACTION_UP :
