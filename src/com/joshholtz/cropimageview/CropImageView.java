@@ -3,12 +3,14 @@ package com.joshholtz.cropimageview;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
+import android.graphics.drawable.shapes.RectShape;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.util.Log;
@@ -16,16 +18,20 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 
 public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	
+	private final static String TAG = "CropImageView";
+	
 	private final static int HEIGHT_OF_DRAGGER_INSIDE = 30;
-	private final static int HEIGHT_OF_DRAGGER = 32;
+	private final static int HEIGHT_OF_DRAGGER = 45;
 	private final static int INITIAL_MARGIN_OF_DRAGGER = 60;
 	
 	private ImageView mImageView;
 	private ImageView mTopLeftDragger;
 	private ImageView mBottomRightDragger;
+	private ImageView mDaBox;
 	
 	public CropImageView(Context context) {
 		super(context);
@@ -77,9 +83,44 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 			mBottomRightDragger.setImageDrawable(this.getCircleDrawable());
 			mBottomRightDragger.setOnTouchListener(this);
 			
+			int width = this.getWidth();
+			int height = this.getHeight();
+			
+			int leftMargin = width - INITIAL_MARGIN_OF_DRAGGER - HEIGHT_OF_DRAGGER;
+			int topMargin = height - INITIAL_MARGIN_OF_DRAGGER - HEIGHT_OF_DRAGGER;
+			int rightMargin = 0;
+			int bottomMargin = 0;
+			
 			FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-			params.setMargins(this.getWidth() - HEIGHT_OF_DRAGGER - INITIAL_MARGIN_OF_DRAGGER, this.getHeight() - HEIGHT_OF_DRAGGER - INITIAL_MARGIN_OF_DRAGGER, 0, 0);
+			params.setMargins(leftMargin, topMargin, rightMargin, bottomMargin);
 			this.addView(mBottomRightDragger, params);
+		}
+		
+		if (mDaBox == null) {
+			mDaBox = new ImageView(this.getContext());
+//			mDaBox.setImageDrawable(this.getCropDrawable());
+			if (android.os.Build.VERSION.SDK_INT < 16) {
+				mDaBox.setBackgroundDrawable(this.getCropDrawable());
+			} else {
+				mDaBox.setBackground(this.getCropDrawable());
+			}
+			mDaBox.setScaleType(ScaleType.MATRIX);
+			mDaBox.setAdjustViewBounds(true);
+//			mDaBox.setBackgroundColor(Color.WHITE);
+			
+//			FrameLayout.LayoutParams paramsTopLeft = (LayoutParams) mTopLeftDragger.getLayoutParams();
+//			FrameLayout.LayoutParams paramsBottomRight = (LayoutParams) mBottomRightDragger.getLayoutParams();
+//			
+//			int leftMargin = (int) (paramsTopLeft.leftMargin + (HEIGHT_OF_DRAGGER/2.0));
+//			int topMargin = (int) (paramsTopLeft.topMargin + (HEIGHT_OF_DRAGGER/2.0));
+//			int rightMargin = (int) (paramsBottomRight.rightMargin + HEIGHT_OF_DRAGGER + INITIAL_MARGIN_OF_DRAGGER);
+//			int bottomMargin = (int) (paramsBottomRight.bottomMargin + HEIGHT_OF_DRAGGER + INITIAL_MARGIN_OF_DRAGGER);
+//			
+			FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+//			params.setMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+			this.addView(mDaBox, 1, params);
+			
+			moveCrop();
 		}
 	}
 	
@@ -106,6 +147,8 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	            parms.leftMargin = (int) (x-dx);
 	            parms.topMargin = (int) (y - dy);
 	            v.setLayoutParams(parms);
+	            
+	            moveCrop();
 	        }
 	        break;
 	        case MotionEvent.ACTION_UP :
@@ -117,14 +160,49 @@ public class CropImageView extends FrameLayout implements View.OnTouchListener {
 	    return true;
     }
 
+	private void moveCrop() {
+		FrameLayout.LayoutParams paramsTopLeft = (LayoutParams) mTopLeftDragger.getLayoutParams();
+		FrameLayout.LayoutParams paramsBottomRight = (LayoutParams) mBottomRightDragger.getLayoutParams();
+		
+		int width = this.getWidth();
+		int height = this.getHeight();
+		
+		int leftMargin = (int) (paramsTopLeft.leftMargin + (HEIGHT_OF_DRAGGER/2.0f));
+		int topMargin = (int) (paramsTopLeft.topMargin + (HEIGHT_OF_DRAGGER/2.0f));
+		int rightMargin = (int) (width - paramsBottomRight.leftMargin - (HEIGHT_OF_DRAGGER/2.0f));
+		int bottomMargin = (int) (height - paramsBottomRight.topMargin - (HEIGHT_OF_DRAGGER/2.0f));
+		
+		Log.d(TAG, "Trying to move crop - " + leftMargin + ", " + topMargin + ", " + rightMargin + ", " + bottomMargin);
+		
+		FrameLayout.LayoutParams params = (LayoutParams) mDaBox.getLayoutParams();;
+		params.leftMargin = leftMargin;
+		params.topMargin = topMargin;
+		params.rightMargin = rightMargin;
+		params.bottomMargin = bottomMargin;
+		mDaBox.setLayoutParams(params);
+
+	}
+	
 	private Drawable getCircleDrawable() {
         ShapeDrawable biggerCircle= new ShapeDrawable( new OvalShape());
-        biggerCircle.setIntrinsicHeight( HEIGHT_OF_DRAGGER_INSIDE );
-        biggerCircle.setIntrinsicWidth( HEIGHT_OF_DRAGGER_INSIDE);
-        biggerCircle.setBounds(new Rect(0, 0, HEIGHT_OF_DRAGGER_INSIDE, HEIGHT_OF_DRAGGER_INSIDE));
+        biggerCircle.setIntrinsicHeight( HEIGHT_OF_DRAGGER );
+        biggerCircle.setIntrinsicWidth( HEIGHT_OF_DRAGGER);
+        biggerCircle.setBounds(new Rect(0, 0, HEIGHT_OF_DRAGGER, HEIGHT_OF_DRAGGER));
         biggerCircle.getPaint().setColor(Color.BLUE);
         
         return biggerCircle;
+	}
+	
+	private Drawable getCropDrawable() {
+		ShapeDrawable greenShape = new ShapeDrawable(new RectShape());
+//		greenShape.setIntrinsicHeight( this.getHeight() );
+//		greenShape.setIntrinsicWidth(  this.getWidth() );
+	    greenShape.getPaint().setStrokeWidth(3);
+	    greenShape.getPaint().setColor(Color.WHITE);
+	    greenShape.setAlpha(150);
+	    greenShape.getPaint().setStyle(Paint.Style.FILL_AND_STROKE);
+	    
+	    return greenShape;
 	}
 	
 }
